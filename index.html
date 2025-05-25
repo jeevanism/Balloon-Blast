@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balloon Pop Frenzy!</title>
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <div id="game-area">
+        <div class="stars-container"></div>
+        <div class="cloud cloud-1"></div>
+        <div class="cloud cloud-2"></div>
+        <div class="cloud cloud-3"></div>
+
+        <div id="game-info">
+            <div class="info-box">Score: <span id="score-display">0</span></div>
+            <div class="info-box">Level: <span id="level-display">1</span></div>
+        </div>
+
+        <div id="game-messages"></div>
+    </div>
+
+
+    <div id="rules-modal" class="modal">
+        <div class="modal-content">
+            <h2>🎈 Balloon Pop Frenzy! 🎈</h2>
+            <h3>How to Play:</h3>
+            <ul>
+                <li>Pop as many balloons as you can by clicking (or tapping) them!</li>
+                <li>Different colors are worth different points.</li>
+                <li>Watch out for negative balloons (marked with an 💀) - popping them will cost you points!</li>
+                <li>Super balloons (marked with 💰 ) are worth lots of points but are faster!</li>
+                <li>Special balloons:
+                    <ul>
+                        <li>☢️ Nuclear: Clear all balloons from the sky!</li>
+                        <li>✨ Combo: Gives you a temporary score multiplier for rapid pops!</li>
+                    </ul>
+                </li>
+                <li>Don't let too many balloons escape to the top! (Allowed misses vary per level)</li>
+                <li>Progress through levels by reaching score thresholds. Each level gets harder!</li>
+
+            </ul>
+            <button id="start-game-btn" class="modal-button">Start Game</button>
+        </div>
+    </div>
+
+    <div id="game-over-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Game Over!</h2>
+            <p>Final Score: <span id="final-score">0</span></p>
+            <p>Highest Level Reached: <span id="final-level">1</span></p>
+            <h3>High Scores:</h3>
+            <ul id="high-score-list"></ul>
+            <button id="play-again-btn" class="modal-button">Play Again</button>
+        </div>
+    </div>
+    <script src="game.js" defer></script>
+</body>
+
+
+</html>
