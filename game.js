@@ -48,12 +48,12 @@ function getLevelConfig(levelNumber) {
   const BASE_PATTERN_CHANCE = 0.05;
   const BASE_MAX_MISSED_BALLOONS = 8;
 
-  let minSpawnCalc = Math.max(200, BASE_MIN_SPAWN_INTERVAL - levelNumber * 80);
-  let maxSpawnCalc = Math.max(minSpawnCalc + 150, BASE_MAX_SPAWN_INTERVAL - levelNumber * 40);
-  let speed = Math.max(1.2, BASE_SPEED - levelNumber * 0.2);
-  let scoreReq = BASE_SCORE_THRESHOLD + levelNumber * 150;
+  let minSpawnCalc = Math.max(1000, BASE_MIN_SPAWN_INTERVAL - levelNumber * 50);
+  let maxSpawnCalc = Math.max(minSpawnCalc + 250, BASE_MAX_SPAWN_INTERVAL - levelNumber * 25);
+  let speed = Math.max(4, BASE_SPEED - levelNumber * 0.1);
+  let scoreReq = Math.floor(BASE_SCORE_THRESHOLD * Math.pow(1.10, levelNumber));
   let pattern = Math.min(0.75, BASE_PATTERN_CHANCE + levelNumber * 0.02);
-  let maxMissed = Math.max(1, BASE_MAX_MISSED_BALLOONS - Math.floor(levelNumber / 3));
+  let maxMissed = Math.max(4, BASE_MAX_MISSED_BALLOONS - Math.floor(levelNumber / 6));
   let burstChance = Math.min(0.6, 0.1 + levelNumber * 0.05);
   let minBurstSize = 2;
   let maxBurstSize = Math.min(8, 2 + Math.floor(levelNumber / 2));
@@ -164,16 +164,6 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
 
-        // --- Spawn a nuclear balloon ONLY when ≥ 6 balloons on screen, and no nuke present ---
-        if (
-          activeBalloons.length >= 6 &&
-          !activeBalloons.some(b => {
-            const t = JSON.parse(b.dataset.type);
-            return t.type === "nuclear";
-          })
-        ) {
-          createBalloon(currentLevelConfig, "nuclear");
-        }
       }
     }, spawnInterval);
 
@@ -238,20 +228,22 @@ document.addEventListener("DOMContentLoaded", () => {
     if (forcedType) {
       balloonType = BALLOON_TYPES.find(b => b.type === forcedType);
     } else {
-      // Weighted selection for higher levels
-      const useWeighted = level >= 5;
-      let weightedTypes = BALLOON_TYPES;
-      if (useWeighted) {
-        weightedTypes = [
-          ...BALLOON_TYPES.filter(b => b.type === "normal"), // 50%
-          ...BALLOON_TYPES.filter(b => b.type === "negative"), // 25%
-          ...BALLOON_TYPES.filter(b => b.type === "super"), // 15%
-          ...BALLOON_TYPES.filter(b => b.type === "special"), // 8%
-          ...BALLOON_TYPES.filter(b => b.type === "nuclear"), // 2%
-        ];
+      // Weighted selection
+      const currentBalloonCount = activeBalloons.length;
+      const typeWeights = getBalloonTypeWeights(level, currentBalloonCount);
+      const weightSum = Object.values(typeWeights).reduce((a, b) => a + b, 0);
+      const rnd = Math.random() * weightSum;
+      let cumulative = 0;
+      let selectedType = 'normal';
+      for (const [type, weight] of Object.entries(typeWeights)) {
+        cumulative += weight;
+        if (rnd < cumulative) {
+          selectedType = type;
+          break;
+        }
       }
-      const typeIndex = getRandomInt(0, weightedTypes.length - 1);
-      balloonType = weightedTypes[typeIndex];
+      const balloonsOfType = BALLOON_TYPES.filter(b => b.type === selectedType);
+      balloonType = balloonsOfType[getRandomInt(0, balloonsOfType.length - 1)];
     }
 
     const balloonEl = document.createElement("div");
@@ -511,6 +503,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     // If couldn't find a spot, just use a random spot
     return randomLeftPx;
+  }
+
+
+
+  function getBalloonTypeWeights(level, balloonCount = 0) {
+    let base = {
+      normal: 65 - Math.min(30, level * 2),
+      negative: Math.min(20, level * 1.2),
+      super: Math.min(12, level),
+      special: level > 6 ? Math.min(8, (level - 6) * 1.2) : 0,
+      nuclear: level > 10 ? 2 : 0
+    };
+
+    // If screen is overloaded, increase nuclear chance
+    if (balloonCount >= 8) {
+      base.nuclear += Math.min(8, (balloonCount - 7) * 3); // 3% more per extra balloon above 7, max 8%
+      // Optionally, reduce normal a bit to keep sum ~100
+      base.normal = Math.max(10, base.normal - 4);
+    }
+    return base;
   }
 
 
