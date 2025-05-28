@@ -98,6 +98,8 @@ const finalScoreDisplay = document.getElementById("final-score");
 const finalLevelDisplay = document.getElementById("final-level");
 const highScoreList = document.getElementById("high-score-list");
 const playAgainBtn = document.getElementById("play-again-btn");
+const missedDisplay = document.getElementById("missed-display");
+const missedMaxDisplay = document.getElementById("missed-max-display");
 
 // --- Main Game Logic ---
 document.addEventListener("DOMContentLoaded", () => {
@@ -105,6 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
     score = 0;
     level = 1; // Level 1 on game start
     balloonsMissed = 0;
+    updateMissedDisplay();
     gameRunning = false;
     gamePaused = false;
     scoreMultiplier = 1;
@@ -140,6 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
     currentLevelConfig = getLevelConfig(level);
     balloonsMissed = 0;
     updateLevelDisplay();
+    updateMissedDisplay();
     setBackgroundByLevel(level)
     showGameMessage("congrats", `Level ${level} - Go!`);
 
@@ -388,6 +392,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const balloonType = JSON.parse(balloonEl.dataset.type);
         if (balloonType.type === "normal") {
           balloonsMissed++;
+          updateMissedDisplay();
           checkGameOverCondition();
         }
       }
@@ -526,6 +531,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 
+
+  function updateMissedDisplay() {
+    missedDisplay.textContent = balloonsMissed;
+    missedMaxDisplay.textContent = currentLevelConfig ? currentLevelConfig.maxMissedBalloons : 0;
+  }
 
   // --- Accessibility (Keyboard Popping) ---
   function handleKeyboardPop(event) {
