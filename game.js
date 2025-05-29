@@ -4,6 +4,9 @@ const GAME_DURATION_PER_LEVEL = 40000; // 40 seconds
 const COMBO_THRESHOLD_MS = 700;
 const MESSAGE_DISPLAY_TIME_MS = 2500;
 const FREEZE_DURATION_MS = 3000;
+const MAX_MISSED_BALLOONS_FIXED_LIMIT = 150;
+let isLevelEnding = false;
+
 
 let audioContext = null;
 const soundLibrary = {};
@@ -139,9 +142,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function startLevel() {
-
+  isLevelEnding = false;
     currentLevelConfig = getLevelConfig(level);
     balloonsMissed = 0;
+    levelScore = 0;
     updateLevelDisplay();
     updateMissedDisplay();
     setBackgroundByLevel(level)
@@ -178,13 +182,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function endLevel() {
     clearAllTimers();
-    if (score >= currentLevelConfig.scoreThreshold) {
-      level++;
-      showGameMessage("congrats", `Awesome! Level ${level} Unlocked!`);
-      setTimeout(startLevel, 1000);
-    } else {
+    if (isLevelEnding) return; 
+      isLevelEnding = true;
+        clearAllTimers();
+  if (levelScore >= currentLevelConfig.scoreThreshold) {
+    level++;
+    showGameMessage("congrats", `Awesome! Level ${level} Unlocked!`);
+    setTimeout(() => {
+      isLevelEnding = false; // allow next level to end later
+      startLevel();
+    }, 1000);
+  }else {
       showGameMessage("warning", "Time's Up!");
-      setTimeout(gameOver, MESSAGE_DISPLAY_TIME_MS);
+    setTimeout(() => {
+      isLevelEnding = false; // allow next game
+      gameOver();
+    }, MESSAGE_DISPLAY_TIME_MS);
     }
   }
 
@@ -341,6 +354,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     updateScoreDisplay(pointsEarned);
+    levelScore += pointsEarned;
 
     // Combo logic
     const currentTime = Date.now();
@@ -402,7 +416,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function checkGameOverCondition() {
-    if (balloonsMissed >= currentLevelConfig.maxMissedBalloons) {
+    if (balloonsMissed >= MAX_MISSED_BALLOONS_FIXED_LIMIT) {
       showGameMessage("warning", "Game Over!");
       gameOver();
     }
@@ -411,8 +425,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function checkLevelCompletion() {
     if (
       gameRunning &&
-      score >= currentLevelConfig.scoreThreshold
-    ) {
+      levelScore >= currentLevelConfig.scoreThreshold) {
       endLevel();
     }
   }
@@ -534,7 +547,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updateMissedDisplay() {
     missedDisplay.textContent = balloonsMissed;
-    missedMaxDisplay.textContent = currentLevelConfig ? currentLevelConfig.maxMissedBalloons : 0;
+    missedMaxDisplay.textContent = MAX_MISSED_BALLOONS_FIXED_LIMIT;
   }
 
   // --- Accessibility (Keyboard Popping) ---
