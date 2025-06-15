@@ -1,7 +1,7 @@
 # 🎈 Balloon Blast
 
 ![Game Screenshot](assets/screenshots/screen1.png)
-![Demo Game ]( https://popbaloon.web.app/)
+[Play the Demo Game](https://popbaloon.web.app/)
 
 This is a simple balloon-popping game built with **HTML, CSS, and JavaScript**.
 
